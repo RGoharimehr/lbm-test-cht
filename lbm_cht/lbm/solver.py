@@ -97,6 +97,8 @@ class LBMSolver:
     
     def calculate_relaxation_parameters(self):
         """Calculate relaxation parameters from physical properties."""
+        import warnings
+        
         # Kinematic viscosity
         nu = self.fluid_material.get_kinematic_viscosity()
         
@@ -113,6 +115,27 @@ class LBMSolver:
         
         # Create relaxation time field for temperature
         self.tau_g = np.where(self.fluid_mask, self.tau_g_fluid, self.tau_g_solid)
+        
+        # Stability checks
+        if self.tau_f < 0.51:
+            warnings.warn(
+                f"Momentum relaxation time tau_f={self.tau_f:.3f} is too low (< 0.51). "
+                "This will cause instability. Increase viscosity or decrease dt/dx^2.",
+                UserWarning
+            )
+        
+        if self.tau_g_fluid < 0.51:
+            warnings.warn(
+                f"Thermal relaxation time tau_g_fluid={self.tau_g_fluid:.3f} is too low (< 0.51). "
+                "This will cause instability. Increase thermal diffusivity or decrease dt/dx^2.",
+                UserWarning
+            )
+        
+        # Print relaxation parameters for user reference
+        print(f"\nRelaxation Parameters:")
+        print(f"  tau_f (momentum): {self.tau_f:.4f}")
+        print(f"  tau_g_fluid (thermal, fluid): {self.tau_g_fluid:.4f}")
+        print(f"  tau_g_solid (thermal, solid): {self.tau_g_solid:.4f}")
     
     def _validate_boundary_regions(self):
         """Validate that inlet/outlet regions are appropriately sized."""
@@ -166,6 +189,7 @@ class LBMSolver:
         Args:
             T_inlet: Temperature at inlet (K)
         """
+        self.T_inlet_value = T_inlet
         self.T[:self.n_inlet, :, :] = T_inlet
         print(f"Inlet temperature set to {T_inlet}K over {self.n_inlet} nodes "
               f"(x ∈ [0, {self.n_inlet}), {self.n_inlet/self.nx*100:.1f}% of domain)")
@@ -177,6 +201,7 @@ class LBMSolver:
         Args:
             T_outlet: Temperature at outlet (K)
         """
+        self.T_outlet_value = T_outlet
         self.T[-self.n_outlet:, :, :] = T_outlet
         print(f"Outlet temperature set to {T_outlet}K over {self.n_outlet} nodes "
               f"(x ∈ [{self.nx - self.n_outlet}, {self.nx}), "
@@ -189,9 +214,25 @@ class LBMSolver:
         Args:
             u_inlet: Velocity at inlet in x-direction (m/s)
         """
+        self.u_inlet_value = u_inlet
         self.u[0, :self.n_inlet, :, :] = u_inlet
+        
+        # Check Mach number for stability
+        cs = 1.0 / np.sqrt(3.0)  # Lattice speed of sound
+        u_lattice = u_inlet * self.dt / self.dx
+        Ma = u_lattice / cs
+        
+        if Ma > 0.3:
+            import warnings
+            warnings.warn(
+                f"Inlet Mach number Ma={Ma:.3f} > 0.3 may cause instability. "
+                f"Consider reducing inlet velocity or adjusting dx/dt. "
+                f"Recommended max velocity: {0.3 * cs * self.dx / self.dt:.4f} m/s",
+                UserWarning
+            )
+        
         print(f"Inlet velocity set to {u_inlet} m/s in x-direction "
-              f"over {self.n_inlet} nodes")
+              f"over {self.n_inlet} nodes (Ma={Ma:.4f})")
     
     def get_inlet_region(self):
         """
@@ -293,10 +334,63 @@ class LBMSolver:
             
             # Bounce-back at solid-fluid interface
             self.f[i][self.solid_mask] = self.f[opp][self.solid_mask]
+        
+        # Apply inlet velocity boundary condition (Zou-He)
+        if hasattr(self, 'u_inlet_value'):
+            self.apply_inlet_velocity_bc()
+        
+        # Apply inlet temperature boundary condition
+        if hasattr(self, 'T_inlet_value'):
+            self.apply_inlet_temperature_bc()
+        
+        # Apply outlet temperature boundary condition
+        if hasattr(self, 'T_outlet_value'):
+            self.apply_outlet_temperature_bc()
     
     def get_opposite_direction(self, i):
         """Get opposite direction index for bounce-back."""
         return self.OPPOSITE_DIRECTIONS[i]
+    
+    def apply_inlet_velocity_bc(self):
+        """Apply inlet velocity boundary condition using Zou-He method."""
+        # Set velocity at inlet
+        self.u[0, :self.n_inlet, :, :] = self.u_inlet_value
+        self.u[1, :self.n_inlet, :, :] = 0.0
+        self.u[2, :self.n_inlet, :, :] = 0.0
+        
+        # Recompute distributions at inlet to maintain velocity
+        for i in range(19):
+            self.f[i, :self.n_inlet, :, :] = self.equilibrium_f(
+                i, 
+                self.rho[:self.n_inlet, :, :], 
+                self.u[:, :self.n_inlet, :, :]
+            )
+    
+    def apply_inlet_temperature_bc(self):
+        """Apply inlet temperature boundary condition (Dirichlet)."""
+        # Set temperature at inlet
+        self.T[:self.n_inlet, :, :] = self.T_inlet_value
+        
+        # Recompute thermal distributions at inlet
+        for i in range(19):
+            self.g[i, :self.n_inlet, :, :] = self.equilibrium_g(
+                i,
+                self.T[:self.n_inlet, :, :],
+                self.u[:, :self.n_inlet, :, :]
+            )
+    
+    def apply_outlet_temperature_bc(self):
+        """Apply outlet temperature boundary condition (Dirichlet)."""
+        # Set temperature at outlet
+        self.T[-self.n_outlet:, :, :] = self.T_outlet_value
+        
+        # Recompute thermal distributions at outlet
+        for i in range(19):
+            self.g[i, -self.n_outlet:, :, :] = self.equilibrium_g(
+                i,
+                self.T[-self.n_outlet:, :, :],
+                self.u[:, -self.n_outlet:, :, :]
+            )
     
     def compute_macroscopic(self):
         """Compute macroscopic variables from distributions."""
@@ -319,20 +413,64 @@ class LBMSolver:
         self.streaming()
         self.boundary_conditions()
         self.compute_macroscopic()
+        
+        # Check for stability issues
+        self.check_stability()
     
-    def run(self, num_steps, callback=None):
+    def check_stability(self):
+        """Check for numerical stability issues."""
+        # Check for NaN or Inf
+        if np.any(np.isnan(self.T)) or np.any(np.isinf(self.T)):
+            raise RuntimeError("Temperature field contains NaN or Inf - simulation has diverged!")
+        
+        if np.any(np.isnan(self.u)) or np.any(np.isinf(self.u)):
+            raise RuntimeError("Velocity field contains NaN or Inf - simulation has diverged!")
+        
+        if np.any(np.isnan(self.rho)) or np.any(np.isinf(self.rho)):
+            raise RuntimeError("Density field contains NaN or Inf - simulation has diverged!")
+        
+        # Check for unrealistic values
+        u_mag = np.sqrt(np.sum(self.u**2, axis=0))
+        max_u = np.max(u_mag[self.fluid_mask])
+        
+        # Lattice velocity
+        max_u_lattice = max_u * self.dt / self.dx
+        cs = 1.0 / np.sqrt(3.0)
+        max_Ma = max_u_lattice / cs
+        
+        if max_Ma > 0.5:
+            import warnings
+            warnings.warn(
+                f"Maximum Mach number {max_Ma:.3f} > 0.5 indicates potential instability. "
+                f"Max velocity: {max_u:.4f} m/s",
+                UserWarning
+            )
+    
+    def run(self, num_steps, callback=None, print_interval=100):
         """
         Run simulation for specified number of steps.
         
         Args:
             num_steps: Number of time steps
             callback: Optional callback function called after each step
+            print_interval: Print progress every N steps (0 to disable)
         """
+        print(f"\nStarting simulation for {num_steps} steps...")
+        
         for step in range(num_steps):
             self.step()
             
+            if print_interval > 0 and (step + 1) % print_interval == 0:
+                u_mag = np.sqrt(np.sum(self.u**2, axis=0))
+                max_u = np.max(u_mag[self.fluid_mask])
+                mean_T = np.mean(self.T[self.fluid_mask])
+                print(f"  Step {step+1}/{num_steps}: "
+                      f"max_u={max_u:.5f} m/s, mean_T={mean_T:.2f}K")
+            
             if callback is not None:
                 callback(step, self)
+        
+        print(f"Simulation complete!\n")
     
     def get_temperature(self):
         """Get temperature field."""
