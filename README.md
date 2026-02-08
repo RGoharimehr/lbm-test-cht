@@ -2,7 +2,29 @@
 
 A Python package for simulating conjugate heat transfer (CHT) using the Lattice Boltzmann Method (LBM) in various geometries including channels, ducts, skived fins, Kelvin cells, and pin fins.
 
-## ⚠️ Latest Critical Fixes - Stability & Boundary Layers! ✅
+## ⚠️ Latest Updates ✅
+
+### Advanced Boundary Condition Methods (NEW!)
+
+**Curved boundary treatment methods adapted from https://github.com/siramirsaman/LBM:**
+
+- ✅ **Bouzidi Interpolated BC** - Sub-grid accuracy for curved boundaries
+- ✅ **Yu Interpolated BC** - For moving/rotating walls
+- ✅ **Filippova Interpolated BC** - Alternative interpolation scheme
+- ✅ **Smooth cylinder surfaces** - No stair-stepping on pin fins
+- ✅ **Method selection** - Choose best BC for your geometry
+
+**See [BOUNDARY_METHODS.md](BOUNDARY_METHODS.md) for complete guide!**
+
+```python
+# Use advanced boundary method for curved geometries
+solver = LBMSolver(
+    geometry, fluid, solid,
+    boundary_method='bouzidi'  # 'simple', 'bouzidi', 'yu', 'filippova'
+)
+```
+
+### Critical Stability Fixes
 
 **The LBM solver has been significantly improved with critical stability fixes:**
 
