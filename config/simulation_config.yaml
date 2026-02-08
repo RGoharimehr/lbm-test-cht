@@ -1,0 +1,197 @@
+# Simulation configuration for LBM-CHT
+
+simulation:
+  # Domain size
+  nx: 64
+  ny: 64
+  nz: 64
+  
+  # Time stepping
+  timesteps: 20000
+  output_interval: 100
+  
+  # Convergence criteria
+  convergence_tolerance: 1.0e-6
+  check_convergence_interval: 100
+
+# Fluid properties
+fluid:
+  # Kinematic viscosity (lattice units)
+  viscosity: 0.01
+  
+  # Reference density
+  density: 1.0
+  
+  # Thermal diffusivity (lattice units)
+  thermal_diffusivity: 0.01
+  
+  # Force scheme: 'guo', 'edm', or 'he'
+  force_scheme: 'guo'
+
+# Solid properties (for conjugate heat transfer)
+solid:
+  # Thermal conductivity ratio (k_solid / k_fluid)
+  thermal_conductivity_ratio: 10.0
+  
+  # Thermal diffusivity (lattice units)
+  thermal_diffusivity: 0.001
+
+# Gyroid geometry parameters
+gyroid:
+  # Generate gyroid? If false, will use simple geometry
+  enabled: true
+  
+  # Level set threshold (controls porosity)
+  # Typical range: -1.0 to 1.0
+  threshold: 0.0
+  
+  # Spatial scale (number of unit cells)
+  scale: 2.0
+  
+  # Target porosity (if auto-adjust enabled)
+  porosity_target: 0.7
+  auto_adjust_threshold: true
+  
+  # Surface type: 'G' (Gyroid), 'D' (Diamond), 'P' (Primitive)
+  surface_type: 'G'
+
+# Boundary conditions
+boundary_conditions:
+  # Flow boundary conditions
+  flow:
+    # Inlet boundary (x=0)
+    inlet:
+      type: 'velocity'  # 'velocity', 'pressure', or 'periodic'
+      velocity: [0.1, 0.0, 0.0]  # [vx, vy, vz]
+    
+    # Outlet boundary (x=nx-1)
+    outlet:
+      type: 'pressure'  # 'velocity', 'pressure', or 'periodic'
+      pressure: 1.0
+    
+    # Side walls (y and z boundaries)
+    sides:
+      type: 'periodic'  # 'periodic', 'no-slip', or 'slip'
+  
+  # Thermal boundary conditions
+  thermal:
+    # Inlet temperature
+    inlet_temperature: 1.0
+    
+    # Outlet boundary
+    outlet:
+      type: 'convective'  # 'constant', 'adiabatic', or 'convective'
+    
+    # Wall temperature (if applicable)
+    wall_temperature: 0.0
+    
+    # Wall heat flux (if Neumann BC)
+    wall_heat_flux: 0.0
+
+# MRT collision parameters
+mrt:
+  # Viscous relaxation time (computed from viscosity)
+  # tau = 0.5 + viscosity / cs^2
+  # Or specify directly:
+  # tau_viscosity: 1.0
+  
+  # Energy mode relaxation time
+  tau_energy: 1.0
+  
+  # Other moment relaxation times
+  tau_other: 1.0
+  
+  # Thermal relaxation time (computed from thermal diffusivity)
+  # Or specify directly:
+  # tau_thermal: 1.0
+
+# External forcing
+forcing:
+  # Apply external body force?
+  enabled: true
+  
+  # Force vector [Fx, Fy, Fz]
+  force: [0.0001, 0.0, 0.0]
+  
+  # Buoyancy (for natural convection)
+  buoyancy:
+    enabled: false
+    gravity: [0.0, 0.0, -0.0001]
+    thermal_expansion_coeff: 1.0
+    reference_temperature: 0.5
+
+# Initial conditions
+initial_conditions:
+  # Initial velocity field
+  velocity:
+    type: 'zero'  # 'zero', 'uniform', or 'file'
+    value: [0.0, 0.0, 0.0]  # if 'uniform'
+    # file: 'initial_velocity.h5'  # if 'file'
+  
+  # Initial temperature field
+  temperature:
+    type: 'gradient'  # 'uniform', 'gradient', or 'file'
+    hot_value: 1.0
+    cold_value: 0.0
+    # file: 'initial_temperature.h5'  # if 'file'
+
+# Output settings
+output:
+  # Output directory
+  directory: 'output'
+  
+  # File formats
+  vtk: true
+  hdf5: true
+  
+  # Fields to output
+  fields:
+    - 'velocity'
+    - 'temperature'
+    - 'pressure'
+    - 'vorticity'
+  
+  # Probe locations for time series
+  monitor_probes:
+    - [32, 32, 32]  # Center point
+    - [16, 32, 32]  # Quarter point
+    - [48, 32, 32]  # Three-quarter point
+  
+  # Save restart files?
+  save_restart: false
+  restart_interval: 5000
+
+# Performance settings
+performance:
+  # Use Numba JIT compilation?
+  use_numba: false
+  
+  # Number of threads (for parallel operations)
+  num_threads: 4
+  
+  # Memory optimization
+  minimize_memory: false
+
+# Validation settings
+validation:
+  # Compare with analytical solution?
+  enabled: false
+  
+  # Validation type: 'poiseuille', 'couette', 'cavity'
+  type: 'poiseuille'
+  
+  # Tolerance for validation
+  tolerance: 0.05
+
+# Logging
+logging:
+  # Log level: 'DEBUG', 'INFO', 'WARNING', 'ERROR'
+  level: 'INFO'
+  
+  # Log to file?
+  log_to_file: true
+  log_file: 'simulation.log'
+  
+  # Print progress to console?
+  print_progress: true
+  progress_interval: 100
