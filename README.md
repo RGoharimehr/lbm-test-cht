@@ -1,1 +1,1 @@
-# lbm-test-cht
+# LBM Conjugate Heat Transfer - 3D Lattice Boltzmann Method for Gyroid Structures
