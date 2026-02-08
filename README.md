@@ -9,6 +9,17 @@ A comprehensive Python implementation of the Lattice Boltzmann Method (LBM) for 
 - **Gyroid geometry generation** with controllable porosity
 - **High Reynolds and Nusselt number** capability (Re > 1000, Nu > 100)
 
+## 🚀 Want to Use It Now?
+
+**👉 See [GETTING_STARTED.md](GETTING_STARTED.md) for a 5-minute quick start!**
+
+Or run:
+```bash
+pip install numpy scipy matplotlib pyyaml
+python verify_install.py  # Check installation
+python quick_start.py     # Run your first simulation
+```
+
 ## Table of Contents
 
 - [Features](#features)
