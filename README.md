@@ -184,10 +184,10 @@ solid_fraction = geom_smooth.get_solid_fraction()
 Run the included examples to see the package in action:
 
 ```bash
-# Example 1: Channel geometry with water flow
+# Example 1: Channel geometry with forced convection
 python examples/example1_channel.py
 
-# Example 2: Pin fins with CoolProp material
+# Example 2: Pin fins with forced convection cooling
 python examples/example2_pin_fins_coolprop.py
 
 # Example 3: Compare all geometries
@@ -196,8 +196,11 @@ python examples/example3_geometry_comparison.py
 # Example 4: Resolution comparison
 python examples/example4_resolution_comparison.py
 
-# Example 5: Boundary conditions configuration ⭐ NEW!
+# Example 5: Boundary conditions configuration
 python examples/example5_boundary_conditions.py
+
+# Example 6: Velocity comparison (forced convection effects) ⭐ NEW!
+python examples/example6_velocity_comparison.py
 ```
 
 ## Available Geometries
