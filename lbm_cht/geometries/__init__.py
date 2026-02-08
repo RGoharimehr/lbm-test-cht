@@ -9,6 +9,7 @@ from .duct import DuctGeometry
 from .skived_fins import SkivedFinsGeometry
 from .kelvin_cells import KelvinCellsGeometry
 from .pin_fins import PinFinsGeometry
+from .pipe import PipeGeometry
 
 __all__ = [
     "BaseGeometry",
@@ -17,4 +18,5 @@ __all__ = [
     "SkivedFinsGeometry",
     "KelvinCellsGeometry",
     "PinFinsGeometry",
+    "PipeGeometry",
 ]

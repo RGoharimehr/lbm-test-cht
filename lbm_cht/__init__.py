@@ -12,6 +12,7 @@ from .geometries import (
     SkivedFinsGeometry,
     KelvinCellsGeometry,
     PinFinsGeometry,
+    PipeGeometry,
 )
 from .materials import Material, CoolPropMaterial
 from .lbm import LBMSolver
@@ -24,6 +25,7 @@ __all__ = [
     "SkivedFinsGeometry",
     "KelvinCellsGeometry",
     "PinFinsGeometry",
+    "PipeGeometry",
     "Material",
     "CoolPropMaterial",
     "LBMSolver",
