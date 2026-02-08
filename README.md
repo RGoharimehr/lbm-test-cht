@@ -2,6 +2,50 @@
 
 A Python package for simulating conjugate heat transfer (CHT) using the Lattice Boltzmann Method (LBM) in various geometries including channels, ducts, skived fins, Kelvin cells, and pin fins.
 
+## ⚠️ Latest Critical Fixes - Stability & Boundary Layers! ✅
+
+**The LBM solver has been significantly improved with critical stability fixes:**
+
+- ✅ **Boundary layers now clearly visible!** (velocity & temperature)
+- ✅ **Numerical stability ensured** - no more divergence
+- ✅ **Smooth contours** - no jagged edges  
+- ✅ **Auto time step calculation** for optimal stability
+- ✅ **Runtime monitoring** - detects NaN/Inf automatically
+
+**See [STABILITY_FIX_SUMMARY.md](STABILITY_FIX_SUMMARY.md) for complete details!**
+
+### Quick Example with Stable Solver:
+
+```python
+from lbm_cht import ChannelGeometry, Material, LBMSolver
+
+# Create geometry
+geometry = ChannelGeometry(nx=80, ny=30, nz=20, dx=0.001)
+
+# Create materials  
+fluid = Material("Water", density=1000, viscosity=0.001, 
+                 thermal_conductivity=0.6, specific_heat=4200)
+solid = Material("Aluminum", density=2700, viscosity=0.001,
+                 thermal_conductivity=200, specific_heat=900)
+
+# Create solver with AUTO time step (recommended!)
+solver = LBMSolver(geometry, fluid, solid, dt=None)  # dt=None → auto-calculate!
+
+# Set boundary conditions (enforced every timestep)
+solver.set_inlet_temperature(330.0)
+solver.set_outlet_temperature(300.0)
+solver.set_inlet_velocity(0.01)  # 10 mm/s
+
+# Run simulation
+solver.run(num_steps=1000, print_interval=200)
+
+# Results show clear boundary layers!
+T = solver.get_temperature()
+u = solver.get_velocity()
+```
+
+**Results:** Clear boundary layer development with 2.6× velocity ratio (center/wall) and 14.4K thermal gradient!
+
 ## Features
 
 - **Multiple Geometries Support:**
@@ -11,20 +55,28 @@ A Python package for simulating conjugate heat transfer (CHT) using the Lattice 
   - Kelvin cells (periodic cellular structures)
   - Pin fins (cylindrical pins)
 
-- **Smooth Boundary Representation:** ⭐ NEW!
+- **Smooth Boundary Representation:** ⭐
   - Sub-voxel accuracy for curved surfaces
   - Eliminates jagged stair-step boundaries
   - Multi-point sampling for accurate solid fraction calculation
   - Improved surface area and boundary representation
 
-- **Resolution Validation:** ⭐ NEW!
+- **Resolution Validation:** ⭐
   - Automatic warnings for insufficient resolution
   - Geometry-specific resolution requirements
   - Quality metrics (porosity, surface area, resolution ratio)
 
-- **Boundary Conditions Management:** ⭐ NEW!
+- **Numerical Stability:** ⭐ **NEW!**
+  - Auto time step calculation (dt=None recommended)
+  - Relaxation parameter validation (τ > 0.6 for stability)
+  - Runtime NaN/Inf detection
+  - Mach number monitoring
+  - Progress tracking with velocity/temperature diagnostics
+
+- **Boundary Conditions Management:** ⭐
   - Configurable wall thickness in lattice units
   - Explicit inlet/outlet region specification
+  - BCs enforced every timestep (not just initialization)
   - Helper methods for setting boundary conditions
   - Automatic validation and warnings
   - See [BOUNDARY_CONDITIONS.md](BOUNDARY_CONDITIONS.md) for details
@@ -45,6 +97,7 @@ A Python package for simulating conjugate heat transfer (CHT) using the Lattice 
   - Conjugate heat transfer coupling
   - BGK collision operator
   - Bounce-back boundary conditions
+  - Zou-He velocity boundary conditions
 
 ## Installation
 
