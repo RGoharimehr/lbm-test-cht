@@ -1,0 +1,83 @@
+# Ignore Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+lbm_env/
+dev_env/
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Output directories
+output/
+results/
+data/
+frames/
+
+# Log files
+*.log
+simulation.log
+
+# Data files
+*.h5
+*.hdf5
+*.vti
+*.vtu
+*.vtk
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Documentation builds
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# Backup files
+*.backup

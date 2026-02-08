@@ -1,0 +1,105 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║                                                                        ║
+║                    HOW TO USE LBM-CHT RIGHT NOW                        ║
+║                                                                        ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+THREE STEPS TO GET STARTED:
+
+1️⃣  INSTALL DEPENDENCIES (1 minute)
+   
+   pip install numpy scipy matplotlib pyyaml
+
+2️⃣  VERIFY INSTALLATION (30 seconds)
+   
+   python verify_install.py
+
+3️⃣  RUN YOUR FIRST SIMULATION (1 minute)
+   
+   python quick_start.py
+
+────────────────────────────────────────────────────────────────────────
+
+THAT'S IT! You're now running LBM simulations! 🎉
+
+────────────────────────────────────────────────────────────────────────
+
+WHAT TO DO NEXT:
+
+📚 Detailed Guide:          See GETTING_STARTED.md
+🎯 Run Examples:            python examples/channel_flow.py
+📖 Full Documentation:      See README.md
+🧪 Understand Theory:       See USER_GUIDE.md
+⚙️  Configure Simulations:  See config/simulation_config.yaml
+
+────────────────────────────────────────────────────────────────────────
+
+QUICK EXAMPLES:
+
+▶ Simple channel flow:
+  python examples/channel_flow.py
+
+▶ Heated channel:
+  python examples/heated_channel.py
+
+▶ Full gyroid simulation:
+  python examples/gyroid_cht.py
+
+────────────────────────────────────────────────────────────────────────
+
+CUSTOMIZE YOUR OWN SIMULATION:
+
+Copy an example and modify it:
+  
+  cp examples/channel_flow.py my_simulation.py
+  # Edit parameters in my_simulation.py
+  python my_simulation.py
+
+────────────────────────────────────────────────────────────────────────
+
+NEED HELP?
+
+• Check GETTING_STARTED.md for step-by-step tutorials
+• Read USER_GUIDE.md for detailed explanations  
+• See examples/ directory for working code
+• Open a GitHub issue if you're stuck
+
+────────────────────────────────────────────────────────────────────────
+
+COMMON COMMANDS:
+
+Verify everything works:    python verify_install.py
+Quick demo (1 min):         python quick_start.py
+Simple validation:          python examples/channel_flow.py
+Full CHT simulation:        python examples/gyroid_cht.py
+Run all tests:              python tests/run_tests.py
+
+────────────────────────────────────────────────────────────────────────
+
+FILE STRUCTURE:
+
+src/                 - Core LBM implementation
+examples/            - Ready-to-run examples (START HERE!)
+tests/               - Unit tests
+config/              - Configuration templates
+GETTING_STARTED.md   - Your first stop for tutorials
+README.md            - Complete documentation
+USER_GUIDE.md        - Detailed how-to guide
+
+────────────────────────────────────────────────────────────────────────
+
+TYPICAL WORKFLOW:
+
+1. Read GETTING_STARTED.md
+2. Run verify_install.py to check setup
+3. Run quick_start.py to see it work
+4. Try examples/channel_flow.py
+5. Modify parameters in examples
+6. Create your own simulation
+7. Share your results!
+
+════════════════════════════════════════════════════════════════════════
+
+Ready? Start with:  python verify_install.py
+
+════════════════════════════════════════════════════════════════════════
