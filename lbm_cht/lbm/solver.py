@@ -29,7 +29,10 @@ class LBMSolver:
         1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0,  # 15-18
     ], dtype=float)
     
-    def __init__(self, geometry, fluid_material, solid_material, dx=1.0, dt=1.0):
+    # D3Q19 opposite directions for bounce-back
+    OPPOSITE_DIRECTIONS = [0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15, 18, 17]
+    
+    def __init__(self, geometry, fluid_material, solid_material, dx=1.0, dt=1.0, T_initial=300.0):
         """
         Initialize LBM solver.
         
@@ -39,6 +42,7 @@ class LBMSolver:
             solid_material: Material object for solid
             dx: Lattice spacing (m)
             dt: Time step (s)
+            T_initial: Initial temperature (K), default: 300.0
         """
         self.geometry = geometry
         self.fluid_material = fluid_material
@@ -64,7 +68,7 @@ class LBMSolver:
         # Macroscopic variables
         self.rho = np.ones((self.nx, self.ny, self.nz)) * fluid_material.density
         self.u = np.zeros((3, self.nx, self.ny, self.nz))
-        self.T = np.ones((self.nx, self.ny, self.nz)) * 300.0  # Initial temperature
+        self.T = np.ones((self.nx, self.ny, self.nz)) * T_initial
         
         # Relaxation parameters
         self.calculate_relaxation_parameters()
@@ -156,9 +160,7 @@ class LBMSolver:
     
     def get_opposite_direction(self, i):
         """Get opposite direction index for bounce-back."""
-        # Opposite directions for D3Q19
-        opposites = [0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15, 18, 17]
-        return opposites[i]
+        return self.OPPOSITE_DIRECTIONS[i]
     
     def compute_macroscopic(self):
         """Compute macroscopic variables from distributions."""

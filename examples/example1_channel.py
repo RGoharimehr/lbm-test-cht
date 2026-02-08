@@ -61,12 +61,10 @@ def main():
     
     # Initialize with temperature gradient
     print("\n4. Setting initial conditions...")
-    T_init = solver.T.copy()
     # Hot inlet (left side)
-    T_init[:5, :, :] = 350.0  # 350K
+    solver.T[:5, :, :] = 350.0  # 350K
     # Cold outlet (right side)
-    T_init[-5:, :, :] = 300.0  # 300K
-    solver.T = T_init
+    solver.T[-5:, :, :] = 300.0  # 300K
     solver.initialize_distributions()
     
     # Create visualizer

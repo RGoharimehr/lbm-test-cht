@@ -248,6 +248,7 @@ class Visualizer:
         
         # Add solver data if available
         if self.solver is not None:
+            # Use Fortran order for PyVista compatibility (column-major layout)
             grid.cell_data['temperature'] = self.solver.get_temperature().flatten(order='F')
             u = self.solver.get_velocity()
             velocity_mag = np.sqrt(u[0]**2 + u[1]**2 + u[2]**2)

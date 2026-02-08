@@ -42,9 +42,17 @@ class CoolPropMaterial(Material):
             specific_heat = CP.PropsSI('C', 'T', temperature, 'P', pressure, fluid_name)
             viscosity = CP.PropsSI('V', 'T', temperature, 'P', pressure, fluid_name)
             
+            # Format pressure for display
+            if pressure >= 1e6:
+                pressure_str = f"{pressure/1e6:.2f}MPa"
+            elif pressure >= 1e3:
+                pressure_str = f"{pressure/1000:.1f}kPa"
+            else:
+                pressure_str = f"{pressure:.0f}Pa"
+            
             # Initialize parent Material class
             super().__init__(
-                name=f"{fluid_name} ({temperature}K, {pressure/1000:.1f}kPa)",
+                name=f"{fluid_name} ({temperature}K, {pressure_str})",
                 density=density,
                 thermal_conductivity=thermal_conductivity,
                 specific_heat=specific_heat,
@@ -68,7 +76,15 @@ class CoolPropMaterial(Material):
             self.thermal_conductivity = CP.PropsSI('L', 'T', temperature, 'P', self.pressure, self.fluid_name)
             self.specific_heat = CP.PropsSI('C', 'T', temperature, 'P', self.pressure, self.fluid_name)
             self.viscosity = CP.PropsSI('V', 'T', temperature, 'P', self.pressure, self.fluid_name)
-            self.name = f"{self.fluid_name} ({temperature}K, {self.pressure/1000:.1f}kPa)"
+            
+            # Update name with proper pressure formatting
+            if self.pressure >= 1e6:
+                pressure_str = f"{self.pressure/1e6:.2f}MPa"
+            elif self.pressure >= 1e3:
+                pressure_str = f"{self.pressure/1000:.1f}kPa"
+            else:
+                pressure_str = f"{self.pressure:.0f}Pa"
+            self.name = f"{self.fluid_name} ({temperature}K, {pressure_str})"
         except Exception as e:
             raise ValueError(f"Failed to update properties for {self.fluid_name}: {e}")
     
@@ -86,7 +102,15 @@ class CoolPropMaterial(Material):
             self.thermal_conductivity = CP.PropsSI('L', 'T', self.temperature, 'P', pressure, self.fluid_name)
             self.specific_heat = CP.PropsSI('C', 'T', self.temperature, 'P', pressure, self.fluid_name)
             self.viscosity = CP.PropsSI('V', 'T', self.temperature, 'P', pressure, self.fluid_name)
-            self.name = f"{self.fluid_name} ({self.temperature}K, {pressure/1000:.1f}kPa)"
+            
+            # Update name with proper pressure formatting
+            if pressure >= 1e6:
+                pressure_str = f"{pressure/1e6:.2f}MPa"
+            elif pressure >= 1e3:
+                pressure_str = f"{pressure/1000:.1f}kPa"
+            else:
+                pressure_str = f"{pressure:.0f}Pa"
+            self.name = f"{self.fluid_name} ({self.temperature}K, {pressure_str})"
         except Exception as e:
             raise ValueError(f"Failed to update properties for {self.fluid_name}: {e}")
     
@@ -101,7 +125,15 @@ class CoolPropMaterial(Material):
         return sorted(fluids)
     
     def __repr__(self):
+        # Format pressure for display
+        if self.pressure >= 1e6:
+            pressure_str = f"{self.pressure/1e6:.2f}MPa"
+        elif self.pressure >= 1e3:
+            pressure_str = f"{self.pressure/1000:.1f}kPa"
+        else:
+            pressure_str = f"{self.pressure:.0f}Pa"
+        
         return (f"CoolPropMaterial(fluid='{self.fluid_name}', T={self.temperature}K, "
-                f"P={self.pressure/1000:.1f}kPa, rho={self.density:.2f}, "
+                f"P={pressure_str}, rho={self.density:.2f}, "
                 f"k={self.thermal_conductivity:.4f}, cp={self.specific_heat:.2f}, "
                 f"mu={self.viscosity:.6e})")
