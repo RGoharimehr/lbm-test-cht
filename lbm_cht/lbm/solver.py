@@ -32,7 +32,7 @@ class LBMSolver:
     # D3Q19 opposite directions for bounce-back
     OPPOSITE_DIRECTIONS = [0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15, 18, 17]
     
-    def __init__(self, geometry, fluid_material, solid_material, dx=1.0, dt=1.0, T_initial=300.0,
+    def __init__(self, geometry, fluid_material, solid_material, dx=1.0, dt=None, T_initial=300.0,
                  n_inlet=None, n_outlet=None):
         """
         Initialize LBM solver.
@@ -42,7 +42,7 @@ class LBMSolver:
             fluid_material: Material object for fluid
             solid_material: Material object for solid
             dx: Lattice spacing (m)
-            dt: Time step (s)
+            dt: Time step (s). If None, auto-calculated for stability
             T_initial: Initial temperature (K), default: 300.0
             n_inlet: Number of lattice nodes for inlet region (default: auto-calculate)
             n_outlet: Number of lattice nodes for outlet region (default: auto-calculate)
@@ -51,7 +51,17 @@ class LBMSolver:
         self.fluid_material = fluid_material
         self.solid_material = solid_material
         self.dx = dx
-        self.dt = dt
+        
+        # Auto-calculate dt for stability if not provided
+        if dt is None:
+            # Target tau = 0.7 for stability
+            # tau = 0.5 + 3*nu*dt/dx^2, so dt = (tau - 0.5)*dx^2/(3*nu)
+            nu = fluid_material.get_kinematic_viscosity()
+            target_tau = 0.7
+            self.dt = (target_tau - 0.5) * (dx ** 2) / (3.0 * nu)
+            print(f"Auto-calculated dt = {self.dt:.6f} s for stability (target tau={target_tau})")
+        else:
+            self.dt = dt
         
         # Get grid dimensions
         self.nx, self.ny, self.nz = geometry.get_dimensions()
@@ -116,18 +126,19 @@ class LBMSolver:
         # Create relaxation time field for temperature
         self.tau_g = np.where(self.fluid_mask, self.tau_g_fluid, self.tau_g_solid)
         
-        # Stability checks
-        if self.tau_f < 0.51:
+        # Stability checks - more lenient threshold
+        if self.tau_f < 0.55:
             warnings.warn(
-                f"Momentum relaxation time tau_f={self.tau_f:.3f} is too low (< 0.51). "
-                "This will cause instability. Increase viscosity or decrease dt/dx^2.",
+                f"Momentum relaxation time tau_f={self.tau_f:.3f} is too low (< 0.55). "
+                "This may cause instability. Increase viscosity or decrease dt/dx^2. "
+                f"Recommended: Increase dt to at least {0.05 * (self.dx ** 2) / nu:.6f} s",
                 UserWarning
             )
         
-        if self.tau_g_fluid < 0.51:
+        if self.tau_g_fluid < 0.55:
             warnings.warn(
-                f"Thermal relaxation time tau_g_fluid={self.tau_g_fluid:.3f} is too low (< 0.51). "
-                "This will cause instability. Increase thermal diffusivity or decrease dt/dx^2.",
+                f"Thermal relaxation time tau_g_fluid={self.tau_g_fluid:.3f} is too low (< 0.55). "
+                "This may cause instability. Increase thermal diffusivity or decrease dt/dx^2.",
                 UserWarning
             )
         
@@ -136,6 +147,14 @@ class LBMSolver:
         print(f"  tau_f (momentum): {self.tau_f:.4f}")
         print(f"  tau_g_fluid (thermal, fluid): {self.tau_g_fluid:.4f}")
         print(f"  tau_g_solid (thermal, solid): {self.tau_g_solid:.4f}")
+        
+        # Print stability assessment
+        if self.tau_f > 0.6 and self.tau_g_fluid > 0.6:
+            print(f"  ✓ Relaxation parameters are in stable range (tau > 0.6)")
+        elif self.tau_f > 0.55 and self.tau_g_fluid > 0.55:
+            print(f"  ⚠ Relaxation parameters are marginal (0.55 < tau < 0.6)")
+        else:
+            print(f"  ✗ Relaxation parameters may cause instability (tau < 0.55)")
     
     def _validate_boundary_regions(self):
         """Validate that inlet/outlet regions are appropriately sized."""
