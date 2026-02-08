@@ -22,6 +22,13 @@ A Python package for simulating conjugate heat transfer (CHT) using the Lattice 
   - Geometry-specific resolution requirements
   - Quality metrics (porosity, surface area, resolution ratio)
 
+- **Boundary Conditions Management:** ⭐ NEW!
+  - Configurable wall thickness in lattice units
+  - Explicit inlet/outlet region specification
+  - Helper methods for setting boundary conditions
+  - Automatic validation and warnings
+  - See [BOUNDARY_CONDITIONS.md](BOUNDARY_CONDITIONS.md) for details
+
 - **Material Properties:**
   - Built-in common materials (Water, Air, Copper, Aluminum, Steel)
   - CoolProp integration for extensive fluid property database
@@ -185,6 +192,12 @@ python examples/example2_pin_fins_coolprop.py
 
 # Example 3: Compare all geometries
 python examples/example3_geometry_comparison.py
+
+# Example 4: Resolution comparison
+python examples/example4_resolution_comparison.py
+
+# Example 5: Boundary conditions configuration ⭐ NEW!
+python examples/example5_boundary_conditions.py
 ```
 
 ## Available Geometries
