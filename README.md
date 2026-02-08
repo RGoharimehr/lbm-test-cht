@@ -288,35 +288,54 @@ solid_fraction = geom_smooth.get_solid_fraction()
 - ✅ Better flow physics near walls
 - ✅ Smoother convergence
 
-## Examples
+## Examples ⭐ **REDESIGNED!**
+
+All examples now include comprehensive visualization with:
+- ✅ **Velocity contours** (2D color maps)
+- ✅ **Temperature contours** (2D color maps)
+- ✅ **Velocity profiles** at multiple positions
+- ✅ **Temperature profiles** at multiple positions
+- ✅ **6-9 panel publication-quality figures**
 
 Run the included examples to see the package in action:
 
 ```bash
-# Example 1: Channel geometry with forced convection
-python examples/example1_channel.py
+# Example 1: Channel Flow with Boundary Layer Development
+# - Simple channel with heated walls
+# - Velocity and thermal boundary layers
+# - 6-panel comprehensive visualization
+python examples/example1_channel_flow.py
 
-# Example 2: Pin fins with forced convection cooling
-python examples/example2_pin_fins_coolprop.py
+# Example 2: Pin Fins Heat Exchanger
+# - Complex flow around cylindrical pins
+# - Enhanced heat transfer analysis
+# - 9-panel visualization with flow patterns
+python examples/example2_pin_fins.py
 
-# Example 3: Compare all geometries
-python examples/example3_geometry_comparison.py
+# Example 3: Circular Pipe with Thermal Entry Length
+# - Developing velocity and temperature profiles
+# - Radial profile analysis
+# - 9-panel visualization with cross-sections
+python examples/example3_pipe.py
 
-# Example 4: Resolution comparison
-python examples/example4_resolution_comparison.py
+# Example 4: Kelvin Cell Heat Exchanger
+# - Advanced 3D periodic structure
+# - Complex flow patterns through porous media
+# - 9-panel visualization with multiple slices
+python examples/example4_kelvin_cells.py
 
-# Example 5: Boundary conditions configuration
-python examples/example5_boundary_conditions.py
-
-# Example 6: Velocity comparison (forced convection effects)
-python examples/example6_velocity_comparison.py
-
-# Example 7: Thermal entry length in circular pipe ⭐ NEW!
-python examples/example7_pipe_thermal_entry.py
-
-# Example 8: Pipe thermal boundary layer (simplified demo) ⭐ NEW!
-python examples/example8_pipe_boundary_layer.py
+# Example 5: High Reynolds Number Simulation
+# - Re = 10,000 demonstration
+# - Dimensionless scaling in action
+# - 9-panel visualization with theory comparison
+python examples/example5_high_reynolds.py
 ```
+
+**Each example generates:**
+- Comprehensive multi-panel figure (300 DPI, publication-quality)
+- Detailed terminal output with statistics
+- Reynolds number and dimensionless number analysis
+- Comparison with theoretical predictions where applicable
 
 ## Available Geometries
 
