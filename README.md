@@ -4,7 +4,40 @@ A Python package for simulating conjugate heat transfer (CHT) using the Lattice 
 
 ## ⚠️ Latest Updates ✅
 
-### Advanced Boundary Condition Methods (NEW!)
+### ⭐ Dimensionless Scaling for High Reynolds Numbers (NEW!)
+
+**Achieve high Reynolds numbers (Re > 10,000) while maintaining stability:**
+
+- ✅ **Automatic parameter calculation** - Target Re with stable Ma and tau
+- ✅ **Unit converter** - Physical to lattice units and vice versa
+- ✅ **Trade-off visualization** - Ma vs tau vs domain size
+- ✅ **Practical guidelines** - Re ranges from 1,000 to 100,000+
+- ✅ **Examples and documentation** - Complete workflow
+
+**See [DIMENSIONLESS_SCALING.md](DIMENSIONLESS_SCALING.md) for complete guide!**
+
+```python
+from lbm_cht.lbm.unit_converter import DimensionlessScaling
+
+# Physical parameters: water at 1 m/s in 10mm pipe
+scaling = DimensionlessScaling(
+    Re_target=10000,    # Target Reynolds number
+    L_ref=0.01,         # 10 mm
+    u_ref=1.0,          # 1 m/s
+    nu_ref=1e-6,        # Water viscosity
+    Ma_target=0.1,      # Keep Ma low for stability
+    tau_target=0.7      # Safe relaxation time
+)
+
+# Get lattice parameters
+print(f"Domain size: {scaling.N} lattice units")
+print(f"Grid spacing: {scaling.dx} m")
+print(f"Lattice velocity: {scaling.u_lattice}")
+```
+
+![Dimensionless Scaling Trade-offs](https://github.com/user-attachments/assets/03277725-962c-4f9f-9b9d-c5c0f0d6cbf8)
+
+### Advanced Boundary Condition Methods
 
 **Curved boundary treatment methods adapted from https://github.com/siramirsaman/LBM:**
 
