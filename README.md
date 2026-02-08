@@ -73,6 +73,7 @@ u = solver.get_velocity()
 - **Multiple Geometries Support:**
   - Simple rectangular channels
   - Ducts with walls
+  - Circular pipes (for thermal entry length studies) ⭐ **NEW!**
   - Skived fins (parallel plate fins)
   - Kelvin cells (periodic cellular structures)
   - Pin fins (cylindrical pins)
@@ -274,8 +275,14 @@ python examples/example4_resolution_comparison.py
 # Example 5: Boundary conditions configuration
 python examples/example5_boundary_conditions.py
 
-# Example 6: Velocity comparison (forced convection effects) ⭐ NEW!
+# Example 6: Velocity comparison (forced convection effects)
 python examples/example6_velocity_comparison.py
+
+# Example 7: Thermal entry length in circular pipe ⭐ NEW!
+python examples/example7_pipe_thermal_entry.py
+
+# Example 8: Pipe thermal boundary layer (simplified demo) ⭐ NEW!
+python examples/example8_pipe_boundary_layer.py
 ```
 
 ## Available Geometries
@@ -296,7 +303,24 @@ Rectangular duct with solid walls.
 DuctGeometry(nx=50, ny=30, nz=30, wall_thickness=2)
 ```
 
-### 3. Skived Fins
+### 3. Circular Pipe ⭐ **NEW!**
+Circular pipe for thermal entry length and boundary layer studies.
+
+```python
+PipeGeometry(nx=100, ny=30, nz=30,
+            inner_diameter_ratio=0.7,  # 70% of cross-section
+            wall_thickness=3,
+            use_smooth_boundary=True)  # Smooth circular walls
+```
+
+**Key features:**
+- Smooth circular boundaries with sub-voxel accuracy
+- Variable diameter and wall thickness
+- Hydraulic diameter and cross-sectional area calculations
+- Ideal for studying thermal boundary layer development
+- Resolution validation (recommends 10-20 cells across diameter)
+
+### 4. Skived Fins
 Parallel plate fins for enhanced heat transfer.
 
 ```python
@@ -304,7 +328,7 @@ SkivedFinsGeometry(nx=50, ny=30, nz=30,
                   num_fins=10, fin_thickness=2)
 ```
 
-### 4. Kelvin Cells
+### 5. Kelvin Cells
 Periodic cellular structure based on tetrakaidecahedron.
 
 ```python
@@ -312,7 +336,7 @@ KelvinCellsGeometry(nx=50, ny=30, nz=30,
                    cell_size=10, strut_thickness=2)
 ```
 
-### 5. Pin Fins
+### 6. Pin Fins
 Array of cylindrical pins for heat transfer enhancement.
 
 ```python
