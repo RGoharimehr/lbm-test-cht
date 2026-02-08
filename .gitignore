@@ -34,7 +34,7 @@ env/
 # Output files
 *.vtk
 *.vtu
-*.png
+example*.png
 *.jpg
 *.gif
 output/
