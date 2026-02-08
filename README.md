@@ -11,6 +11,17 @@ A Python package for simulating conjugate heat transfer (CHT) using the Lattice 
   - Kelvin cells (periodic cellular structures)
   - Pin fins (cylindrical pins)
 
+- **Smooth Boundary Representation:** ⭐ NEW!
+  - Sub-voxel accuracy for curved surfaces
+  - Eliminates jagged stair-step boundaries
+  - Multi-point sampling for accurate solid fraction calculation
+  - Improved surface area and boundary representation
+
+- **Resolution Validation:** ⭐ NEW!
+  - Automatic warnings for insufficient resolution
+  - Geometry-specific resolution requirements
+  - Quality metrics (porosity, surface area, resolution ratio)
+
 - **Material Properties:**
   - Built-in common materials (Water, Air, Copper, Aluminum, Steel)
   - CoolProp integration for extensive fluid property database
@@ -44,7 +55,32 @@ pip install -e .
 
 ## Quick Start
 
-### Example 1: Channel with Water Flow
+### Example 1: Pin Fins with Smooth Boundaries
+
+```python
+from lbm_cht import PinFinsGeometry, Visualizer
+from lbm_cht.materials import CommonMaterials
+
+# Create pin fins geometry with smooth boundaries (default)
+geometry = PinFinsGeometry(
+    nx=60, ny=40, nz=40,
+    num_pins_y=4, num_pins_z=4,
+    pin_diameter=8,  # 8 cells per diameter for smooth representation
+    use_smooth_boundary=True  # Enable sub-voxel accuracy
+)
+
+# Check geometry quality
+metrics = geometry.compute_geometry_quality_metrics()
+print(f"Porosity: {metrics['porosity']:.3f}")
+print(f"Has smooth boundary: {metrics['has_smooth_boundary']}")
+print(f"Resolution ratio: {metrics['resolution_ratio']:.1f}")
+
+# Visualize the smooth solid fraction field
+visualizer = Visualizer(geometry)
+fig = visualizer.plot_geometry_slice()
+```
+
+### Example 2: Channel with Water Flow
 
 ```python
 from lbm_cht import ChannelGeometry, LBMSolver, Visualizer
@@ -69,16 +105,19 @@ visualizer = Visualizer(geometry, solver)
 fig = visualizer.plot_temperature_slice()
 ```
 
-### Example 2: Pin Fins with CoolProp
+### Example 3: Kelvin Cells with CoolProp
 
 ```python
-from lbm_cht import PinFinsGeometry, Visualizer
+from lbm_cht import KelvinCellsGeometry, Visualizer
 from lbm_cht.materials import CoolPropMaterial, CommonMaterials
 
-# Create pin fins geometry
-geometry = PinFinsGeometry(nx=60, ny=40, nz=40,
-                          num_pins_y=4, num_pins_z=4,
-                          pin_diameter=6)
+# Create Kelvin cells with smooth struts
+geometry = KelvinCellsGeometry(
+    nx=60, ny=60, nz=60,
+    cell_size=15,
+    strut_thickness=5,
+    use_smooth_boundary=True  # Smooth cylindrical struts
+)
 
 # Use CoolProp for fluid properties
 fluid = CoolPropMaterial('R134a', temperature=300)
@@ -88,6 +127,50 @@ solid = CommonMaterials.copper()
 visualizer = Visualizer(geometry)
 fig = visualizer.plot_3d_geometry()
 ```
+
+## Resolution Guidelines ⭐ NEW!
+
+Proper resolution is critical for accurate LBM simulations. The package now includes:
+
+- **Automatic validation** with warnings for insufficient resolution
+- **Smooth boundary support** for sub-voxel accuracy on curved surfaces
+- **Quality metrics** to assess geometry adequacy
+
+### Recommended Resolutions
+
+| Geometry | Feature | Minimum | Recommended |
+|----------|---------|---------|-------------|
+| **Pin Fins** | Diameter | 6 cells | 8-12 cells |
+| **Kelvin Cells** | Strut thickness | 4 cells | 5-6 cells |
+| **Channels** | Height/Width | 10 cells | 20-40 cells |
+
+See [RESOLUTION_GUIDE.md](RESOLUTION_GUIDE.md) for comprehensive guidelines.
+
+## Smooth Boundaries ⭐ NEW!
+
+Smooth boundaries eliminate jagged stair-step artifacts on curved surfaces:
+
+```python
+# Traditional binary representation (jagged)
+geom_binary = PinFinsGeometry(nx=40, ny=30, nz=30, pin_diameter=6,
+                              use_smooth_boundary=False)
+
+# Smooth sub-voxel representation (recommended)
+geom_smooth = PinFinsGeometry(nx=40, ny=30, nz=30, pin_diameter=6,
+                              use_smooth_boundary=True)
+
+# Check if geometry uses smooth boundaries
+print(f"Has smooth boundaries: {geom_smooth.has_smooth_boundary()}")
+
+# Access solid fraction field (0-1 continuous values)
+solid_fraction = geom_smooth.get_solid_fraction()
+```
+
+**Benefits:**
+- ✅ Eliminates jagged boundaries
+- ✅ Improves surface area accuracy
+- ✅ Better flow physics near walls
+- ✅ Smoother convergence
 
 ## Examples
 
