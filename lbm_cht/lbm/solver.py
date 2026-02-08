@@ -2,6 +2,7 @@
 LBM solver for conjugate heat transfer
 """
 import numpy as np
+from . import boundary_conditions as bc_module
 
 
 class LBMSolver:
@@ -33,7 +34,7 @@ class LBMSolver:
     OPPOSITE_DIRECTIONS = [0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15, 18, 17]
     
     def __init__(self, geometry, fluid_material, solid_material, dx=1.0, dt=None, T_initial=300.0,
-                 n_inlet=None, n_outlet=None):
+                 n_inlet=None, n_outlet=None, boundary_method='simple'):
         """
         Initialize LBM solver.
         
@@ -46,6 +47,11 @@ class LBMSolver:
             T_initial: Initial temperature (K), default: 300.0
             n_inlet: Number of lattice nodes for inlet region (default: auto-calculate)
             n_outlet: Number of lattice nodes for outlet region (default: auto-calculate)
+            boundary_method: Boundary condition method - one of:
+                'simple' or 'bounce-back': Simple bounce-back (default)
+                'bouzidi' or 'interpolated': Bouzidi interpolated for curved boundaries
+                'yu': Yu interpolated with wall velocity support
+                'filippova': Filippova-Hanel interpolated
         """
         self.geometry = geometry
         self.fluid_material = fluid_material
@@ -85,6 +91,18 @@ class LBMSolver:
         # Get masks
         self.fluid_mask = geometry.get_fluid_mask()
         self.solid_mask = geometry.get_solid_mask()
+        
+        # Get solid fraction if available (for interpolated boundaries)
+        if hasattr(geometry, 'solid_fraction'):
+            self.solid_fraction = geometry.solid_fraction
+        else:
+            # Create simple solid fraction from mask
+            self.solid_fraction = self.solid_mask.astype(float)
+        
+        # Initialize boundary condition method
+        self.boundary_method_name = boundary_method
+        self.boundary_method = bc_module.get_boundary_method(boundary_method)
+        print(f"Using boundary condition method: {self.boundary_method.name}")
         
         # Initialize distribution functions for fluid flow
         self.f = np.zeros((19, self.nx, self.ny, self.nz))
@@ -346,13 +364,24 @@ class LBMSolver:
     
     def boundary_conditions(self):
         """Apply boundary conditions."""
-        # Bounce-back for velocity at solid walls
-        for i in range(1, 19):
-            # Find opposite direction
-            opp = self.get_opposite_direction(i)
-            
-            # Bounce-back at solid-fluid interface
-            self.f[i][self.solid_mask] = self.f[opp][self.solid_mask]
+        # Apply wall boundary condition using selected method
+        # Need to transpose f from [19, nx, ny, nz] to [nx, ny, nz, 19] for BC methods
+        f_transposed = np.transpose(self.f, (1, 2, 3, 0))
+        u_transposed = np.transpose(self.u, (1, 2, 3, 0))
+        
+        self.boundary_method.apply(
+            f_transposed,
+            self.solid_mask,
+            self.solid_fraction,
+            self.rho,
+            u_transposed,
+            self.C,
+            self.W,
+            np.array(self.OPPOSITE_DIRECTIONS)
+        )
+        
+        # Transpose back
+        self.f = np.transpose(f_transposed, (3, 0, 1, 2))
         
         # Apply inlet velocity boundary condition (Zou-He)
         if hasattr(self, 'u_inlet_value'):
